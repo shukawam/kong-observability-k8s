@@ -51,12 +51,21 @@ kubectl apply -f config/opentelemetry-operator/collector.yaml -n observability
 kubectl apply -f config/opentelemetry-operator/instrumentation.yaml -n observability
 ```
 
-## How to use(Kong Gateway)
-
-[Install Kong Gateway on-prem with Helm](https://developer.konghq.com/gateway/install/kubernetes/on-prem/) を参照の上、Control Plane / Data Plane を作成してください。その後、Data Plane を更新します。
+環境に合わせて、公開されているエンドポイントから Grafana を参照してください。Load Balancer などが存在しない場合は、`port-forward` を用いると手軽にアクセス可能です。
 
 ```sh
-helm upgrade kong-dp kong/kong --values config/kong/values-dp.yaml -n kong
+# 以下のように実行すると、http://localhost:8080 で Grafana にアクセス可能
+kubectl -n observability port-forward svc/kube-prometheus-stack-grafana 8080:80
+```
+
+## How to use(Kong Gateway)
+
+[Install Kong Gateway on-prem with Helm](https://developer.konghq.com/gateway/install/kubernetes/on-prem/) を参照の上、Control Plane / Data Plane を作成してください。その後、以下のように実行し Data Plane を更新します。
+
+```sh
+helm upgrade kong-dp kong/kong \
+    --values config/kong/values-dp.yaml \
+    -n kong
 ```
 
 ## How to use(Demo Application)
