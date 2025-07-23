@@ -1,0 +1,4 @@
+loki:
+  image:
+    # see: https://github.com/grafana/loki/issues/11557#issuecomment-2014825845
+    tag: 2.9.3

@@ -1,0 +1,51 @@
+# Do not use Kong Ingress Controller
+ingressController:
+  enabled: false
+   
+image:
+  repository: kong/kong-gateway
+  tag: "3.11"
+   
+# Mount the secret created earlier
+secretVolumes:
+  - kong-cluster-cert
+
+env:
+  role: data_plane
+  database: "off"
+  # Tell the data plane how to connect to the control plane
+  cluster_control_plane: kong-cp-kong-cluster.kong.svc.cluster.local:8005
+  cluster_telemetry_endpoint: kong-cp-kong-clustertelemetry.kong.svc.cluster.local:8006
+  # Configure control plane / data plane authentication
+  lua_ssl_trusted_certificate: /etc/secrets/kong-cluster-cert/tls.crt
+  cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
+  cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
+  tracing_instrumentations: all
+  tracing_sampling_rate: 1.0
+
+# Enterprise functionality
+enterprise:
+  enabled: true
+  license_secret: kong-enterprise-license
+   
+# The data plane handles proxy traffic only
+proxy:
+  enabled: true
+   
+# These roles are served by the kong-cp deployment
+admin:
+  enabled: false
+   
+manager:
+  enabled: false
+
+serviceMonitor:
+  # Specifies whether ServiceMonitor for Prometheus operator should be created
+  # If you wish to gather metrics from a Kong instance with the proxy disabled (such as a hybrid control plane), see:
+  # https://github.com/Kong/charts/blob/main/charts/kong/README.md#prometheus-operator-integration
+  enabled: true
+  trustCRDsExist: false
+  interval: 30s
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack

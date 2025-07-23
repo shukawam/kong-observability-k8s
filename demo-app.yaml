@@ -1,0 +1,179 @@
+##################
+# Carts
+##################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: carts
+  labels:
+    app: carts
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: carts
+  template:
+    metadata:
+      labels:
+        app: carts
+        part-of: gorilla-ec
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
+    spec:
+      containers:
+        - name: carts
+          image: shuheikawamura243/carts:1.2.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3002
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: cart
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: carts
+  labels:
+    app: carts
+spec:
+  ports:
+    - port: 3002
+      targetPort: 3002
+  selector:
+    app: carts
+##################
+# Catalogue
+##################
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalogue
+  labels:
+    app: catalogue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalogue
+  template:
+    metadata:
+      labels:
+        app: catalogue
+        part-of: gorilla-ec
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
+    spec:
+      containers:
+        - name: catalogue
+          image: shuheikawamura243/catalogue:1.2.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: catalogue
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogue
+  labels:
+    app: catalogue
+spec:
+  ports:
+    - port: 3001
+      targetPort: 3001
+  selector:
+    app: catalogue
+##################
+# Orders
+##################
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders
+  labels:
+    app: orders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders
+  template:
+    metadata:
+      labels:
+        app: orders
+        part-of: gorilla-ec
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "true"
+    spec:
+      containers:
+        - name: orders
+          image: shuheikawamura243/orders:1.2.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3003
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: orders
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders
+  labels:
+    app: orders
+spec:
+  ports:
+    - port: 3003
+      targetPort: 3003
+  selector:
+    app: orders
+##################
+# Front-end
+##################
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-end
+  labels:
+    app: front-end
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: front-end
+  template:
+    metadata:
+      labels:
+        app: front-end
+        part-of: gorilla-ec
+    spec:
+      containers:
+        - name: front-end
+          image: shuheikawamura243/front-end:1.2.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GATEWAY_ENDPOINT
+              value: http://my-kong-kong-proxy.kong.svc.cluster.local:80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-end
+  labels:
+    app: front-end
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: front-end
+---

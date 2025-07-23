@@ -1,0 +1,44 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: catalogue-service
+    url: http://catalogue.services.svc.cluster.local:3001
+    routes:
+      - name: catalogue-route
+        paths:
+          - /catalogue
+        strip_path: false
+  - name: carts-service
+    url: http://carts.services.svc.cluster.local:3002
+    routes:
+      - name: cart-route
+        paths:
+          - /cart
+        strip_path: false
+  - name: orders-service
+    url: http://orders.services.svc.cluster.local:3003
+    routes:
+      - name: orders-route
+        paths:
+          - /orders
+        strip_path: false
+
+plugins:
+  - name: opentelemetry
+    config:
+      traces_endpoint: http://opentelemetry-collector.observability.svc.cluster.local:4318/v1/traces
+      resource_attributes:
+        service.name: kong-gateway
+  - name: prometheus
+    config:
+      per_consumer: true
+      status_code_metrics: true
+      ai_metrics: true
+      latency_metrics: true
+      bandwidth_metrics: true
+      upstream_health_metrics: true
+      wasm_metrics: true
+  - name: file-log
+    config:
+      path: /dev/stdout
